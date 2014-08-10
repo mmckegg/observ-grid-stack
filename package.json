@@ -1,6 +1,6 @@
 {
   "name": "observ-grid-stack",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Observe stacked array-grids of identical shape, falling back to grid below on null.",
   "main": "index.js",
   "directories": {
