@@ -4,39 +4,44 @@ var ObservGrid = require('observ-grid')
 
 test('base', function(t){
 
-  t.plan(6)
-
   var stack = GridStack()
 
-  var removeListener = stack(function(grid){
-    t.same(grid.data, [0,1,2,3,4,5])
+  var changes = []
+  stack(function(grid){
+    changes.push(grid)
   })
 
   var grid = ObservGrid([0,1,2,3,4,5], [2, 3])
   // 0 1 2
   // 3 4 5
   stack.push(grid)
-  removeListener()
 
   t.equal(grid.get(0,1), 1)
   t.equal(grid.get(1,0), 3)
   t.equal(grid.get(1,2), 5)
 
+  t.equal(changes.length, 1)
+  t.same(changes[0].data, [0,1,2,3,4,5])
+  t.same(changes[0]._diff, [
+    [ 0, 0, 0 ], [ 0, 1, 1 ], [ 0, 2, 2 ], [ 1, 0, 3 ], [ 1, 1, 4 ], [ 1, 2, 5 ]
+  ])
 
-  var removeListener = stack(function(grid){
-    t.equal(grid.get(0,1), 'A')
-    t.same(grid.data, [0,'A',2,3,4,5])
-  })
+  changes = []
 
   grid.set(0,1, 'A')
-  removeListener()
+
+  t.equal(changes.length, 1)
+  t.equal(changes[0].get(0,1), 'A')
+  t.same(changes[0].data, [0,'A',2,3,4,5])
+  t.same(changes[0]._diff, [ 
+    [ 0, 1, 'A' ] 
+  ])
 
   t.end()
 
 })
 
 test('stacked', function(t){
-  t.plan(7)
 
   var grid1 = ObservGrid([0,1,2,3,4,5], [2, 3])
   // 0 1 2
@@ -54,12 +59,18 @@ test('stacked', function(t){
   t.equal(stack.get(1,1), 'C')
   t.equal(stack.get(1,2), 'D')
 
-  var removeListener = stack(function(value){
-    t.same(value.data, [0,1,2,3,4,5])
+  var changes = []
+  stack(function(value){
+    changes.push(value)
   })
 
   t.equal(stack.pop(), grid2)
-  removeListener()
+
+  t.equal(changes.length, 1)
+  t.same(changes[0].data, [0,1,2,3,4,5])
+  t.same(changes[0]._diff, [ 
+    [ 0, 1, 1 ], [ 0, 2, 2 ], [ 1, 1, 4 ], [ 1, 2, 5 ] 
+  ])
 
   t.end()
 })

@@ -8,16 +8,15 @@ function GridStack(startStack){
   var self = Observ()
 
   var set = self.set
+  var lastArray = []
 
   self.stack = ObservArray(startStack || [])
   if (startStack){
-    set(flatten(self.stack()))
+    refresh()
   }
 
   var releases = [
-    self.stack(function(value){
-      set(flatten(value))
-    })
+    self.stack(refresh)
   ]
 
   self.push = function(grid){
@@ -60,21 +59,39 @@ function GridStack(startStack){
 
   return self
 
+  // scoped
+
+  function refresh(){
+    var value = flatten(self.stack(), lastArray)
+    lastArray = value.data
+    set(value)
+  }
+
 }
 
-function flatten(stack){
+function flatten(stack, lastArray){
   if (Array.isArray(stack) && stack.length){
     var top = stack[stack.length-1]
+
     var array = []
+    lastArray = lastArray || []
+
+    var changes = []
 
     stack.forEach(function(grid){
       grid.data.forEach(function(value, i){
+        if (lastArray[i] !== value){
+          var coords = grid.coordsAt(i)
+          changes.push([coords[0], coords[1], value])
+        }
         if (value != null){
           array[i] = value
         }
       })
     })
 
-    return ArrayGrid(array, top.shape, top.stride)
+    var result = ArrayGrid(array, top.shape, top.stride)
+    result._diff = changes
+    return result
   }
 }
