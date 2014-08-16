@@ -76,14 +76,9 @@ function flatten(stack, lastArray){
     var array = []
     lastArray = lastArray || []
 
-    var changes = []
 
     stack.forEach(function(grid){
       grid.data.forEach(function(value, i){
-        if (lastArray[i] !== value){
-          var coords = grid.coordsAt(i)
-          changes.push([coords[0], coords[1], value])
-        }
         if (value != null){
           array[i] = value
         }
@@ -91,6 +86,17 @@ function flatten(stack, lastArray){
     })
 
     var result = ArrayGrid(array, top.shape, top.stride)
+
+    // generate diff
+    var changes = []
+    var length = Math.max(lastArray.length, array.length)
+    for (var i=0;i<length;i++){
+      if (array[i] !== lastArray[i]){
+        var coords = top.coordsAt(i)
+        changes.push([coords[0], coords[1], array[i]])
+      }
+    }
+
     result._diff = changes
     return result
   }
