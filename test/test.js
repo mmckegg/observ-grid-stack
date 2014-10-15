@@ -20,22 +20,21 @@ test('base', function(t){
   t.equal(grid.get(1,0), 3)
   t.equal(grid.get(1,2), 5)
 
+  stack.update() // force nextTick
+
   t.equal(changes.length, 1)
   t.same(changes[0].data, [0,1,2,3,4,5])
-  t.same(changes[0]._diff, [
-    [ 0, 0, 0 ], [ 0, 1, 1 ], [ 0, 2, 2 ], [ 1, 0, 3 ], [ 1, 1, 4 ], [ 1, 2, 5 ]
-  ])
+
 
   changes = []
 
   grid.set(0,1, 'A')
 
+  stack.update() // force nextTick
+
   t.equal(changes.length, 1)
   t.equal(changes[0].get(0,1), 'A')
   t.same(changes[0].data, [0,'A',2,3,4,5])
-  t.same(changes[0]._diff, [ 
-    [ 0, 1, 'A' ] 
-  ])
 
   t.end()
 
@@ -66,11 +65,10 @@ test('stacked', function(t){
 
   t.equal(stack.pop(), grid2)
 
+  stack.update() // force nextTick
+
   t.equal(changes.length, 1)
   t.same(changes[0].data, [0,1,2,3,4,5])
-  t.same(changes[0]._diff, [ 
-    [ 0, 1, 1 ], [ 0, 2, 2 ], [ 1, 1, 4 ], [ 1, 2, 5 ] 
-  ])
 
   t.end()
 })

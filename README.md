@@ -39,7 +39,7 @@ Resolve coordinates against flattened stack.
 
 ### `gridStack`
 
-Returns an array-grid based on flattened stack. Notifies on all changes to stack.
+Returns an array-grid based on flattened stack. Notifies on all changes to stack on **nextTick**.
 
 ### `gridStack.stack` ([ObservArray](https://github.com/raynos/observ-array))
 

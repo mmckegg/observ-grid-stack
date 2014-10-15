@@ -1,23 +1,30 @@
 var ArrayGrid = require('array-grid')
 var ObservArray = require('observ-array')
-var Observ = require('observ')
+var computedNextTick = require('./computed-next-tick')
 
 module.exports = GridStack
 
 function GridStack(startStack){
-  var self = Observ()
 
-  var set = self.set
-  var lastArray = []
+  var stack = ObservArray([])
+  var fallbackTop = {shape: [1,1], stride: [1,1]}
 
-  self.stack = ObservArray(startStack || [])
-  if (startStack){
-    refresh()
-  }
+  var self = computedNextTick([stack], function(stack){
+    var top = stack[stack.length-1] || fallbackTop
+    var data = stack.reduce(function(result, grid){
+      grid.data.forEach(function(value, i){
+        if (value != null){
+          result[i] = value
+        }
+      })
+      return result
+    }, [])
+    return ArrayGrid(data, top.shape, top.stride)
+  })
 
-  var releases = [
-    self.stack(refresh)
-  ]
+  stack.set(startStack || [])
+
+  self.stack = stack
 
   self.push = function(grid){
     self.stack.push(grid)
@@ -31,73 +38,32 @@ function GridStack(startStack){
   }
 
   self.get = function(row, col){
+    self.update()
     if (self()){
       return self().get(row, col)
     }
   }
 
   self.index = function(row, col){
+    self.update()
     if (self()){
       return self().index(row, col)
     }
   }
 
   self.lookup = function(value){
+    self.update()
     if (self()){
       return self().lookup(value)
     }
   }
 
   self.coordsAt = function(row, col){
+    self.update()
     if (self()){
       return self().coordsAt(value)
     }
   }
 
-  // don't allow setting from outside
-  self.set = null
-
   return self
-
-  // scoped
-
-  function refresh(){
-    var value = flatten(self.stack(), lastArray)
-    lastArray = value.data
-    set(value)
-  }
-
-}
-
-function flatten(stack, lastArray){
-  if (Array.isArray(stack) && stack.length){
-    var top = stack[stack.length-1]
-
-    var array = []
-    lastArray = lastArray || []
-
-
-    stack.forEach(function(grid){
-      grid.data.forEach(function(value, i){
-        if (value != null){
-          array[i] = value
-        }
-      })
-    })
-
-    var result = ArrayGrid(array, top.shape, top.stride)
-
-    // generate diff
-    var changes = []
-    var length = Math.max(lastArray.length, array.length)
-    for (var i=0;i<length;i++){
-      if (array[i] !== lastArray[i]){
-        var coords = top.coordsAt(i)
-        changes.push([coords[0], coords[1], array[i]])
-      }
-    }
-
-    result._diff = changes
-    return result
-  }
 }
