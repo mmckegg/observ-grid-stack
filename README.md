@@ -35,6 +35,10 @@ Resolve coordinates against flattened stack.
 
 ### `gridStack.coordsAt(row, col)`
 
+### `gridStack.update()`
+
+Simulates a `nextTick`, and computes immediately if any changes.
+
 ## Observable Attributes
 
 ### `gridStack`
